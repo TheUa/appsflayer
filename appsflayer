@@ -1,0 +1,74 @@
+   dependencies {
+   implementation 'com.appsflyer:af-android-sdk:5.4.1'
+   implementation 'com.android.installreferrer:installreferrer:2.1'
+   }
+   //manifest
+      <receiver android:name="com.appsflyer.SingleInstallBroadcastReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="com.android.vending.INSTALL_REFERRER" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name=".ShareBroadcastReceiver" android:exported="true"/>
+        
+    ....
+    
+   public class ShareBroadcastReceiver extends BroadcastReceiver {
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        Log.d("INFORMATION", "Received intent after selection: "+intent.getExtras().get(Intent.EXTRA_CHOSEN_COMPONENT));
+        ComponentName componentName = (ComponentName) intent.getExtras().get(Intent.EXTRA_CHOSEN_COMPONENT);
+
+        String channel = null;
+        if (componentName != null && componentName.getPackageName() != null){
+            final PackageManager pm = context.getApplicationContext().getPackageManager();
+            ApplicationInfo appInfo;
+            try {
+                appInfo = pm.getApplicationInfo( componentName.getPackageName(), 0);
+                if (appInfo != null) {
+                    channel = (String) pm.getApplicationLabel(appInfo);
+                }
+            } catch (final PackageManager.NameNotFoundException e) {
+                // do nothing
+            }
+        }
+        ShareInviteHelper.trackInvite(context, channel, null);
+    }
+}
+
+   ...
+   String AF_DEV_KEY = "xxxxx";
+   
+   ...
+     @Override
+    public void onCreate() {
+    ...
+        AppsFlyerLib.getInstance().init(AF_DEV_KEY, conversionListener, this);
+        AppsFlyerLib.getInstance().startTracking(this);
+    }
+    
+    
+    
+    
+    AppsFlyerConversionListener conversionListener = new AppsFlyerConversionListener() {
+        @Override
+        public void onConversionDataSuccess(Map<String, Object> conversionData) {
+            for (String attrName : conversionData.keySet()) {
+                Log.d("LOG_TAG", "attribute: " + attrName + " = " + conversionData.get(attrName));
+            }
+        }
+
+        @Override
+        public void onConversionDataFail(String errorMessage) {
+            Log.d("LOG_TAG", "error getting conversion data: " + errorMessage);
+        }
+        @Override
+        public void onAppOpenAttribution(Map<String, String> attributionData) {
+            for (String attrName : attributionData.keySet()) {
+                Log.d("LOG_TAG", "attribute: " + attrName + " = " + attributionData.get(attrName));
+            }
+        }
+        @Override
+        public void onAttributionFailure(String errorMessage) {
+            Log.d("LOG_TAG", "error onAttributionFailure : " + errorMessage);
+        }
+    };
