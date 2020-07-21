@@ -2,6 +2,13 @@
    implementation 'com.appsflyer:af-android-sdk:5.4.1'
    implementation 'com.android.installreferrer:installreferrer:2.1'
    }
+   
+   proguard
+   
+   -keep public class com.android.installreferrer.** { *; }
+   -keep class com.appsflyer.** { *; }
+
+
    //manifest
       <receiver android:name="com.appsflyer.SingleInstallBroadcastReceiver" android:exported="true">
             <intent-filter>
